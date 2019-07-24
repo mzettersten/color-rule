@@ -5,6 +5,20 @@ Data &amp; Materials from study on the effect of nameability on category learnin
 
 What are the cognitive consequences of having a name for something? Having a word for a feature makes it easier to communicate about a set of exemplars belonging to the same category (e.g., “the red things”) - might it make it easier to learn the category itself? Here, we provide evidence that the ease of learning category distinctions based on simple visual features is predicted from the ease of naming those features. Across seven experiments, participants learned categories composed of colors or shapes that were either easy or more difficult to name in English. Holding the category structure constant, when the underlying features of the category were easy to name, participants were faster and more accurate in learning the novel category. These results suggest that compact verbal labels may facilitate hypothesis formation during learning: it is easier to pose the hypothesis “it is about redness” than “it is about that pinkish-purplish color”. Our results have consequences for understanding how developmental and cross-linguistic differences in a language’s vocabulary affect category learning and conceptual development.
 
+## Link to OSF project:
+
+https://osf.io/fmhku/?view_only=a4fb62864d2446a6bfff6fd90b2e49ce
+
+## Link to AsPredicted pre-registration forms:
+
+Experiment 2B: https://osf.io/4euck
+
+Experiment S4: https://osf.io/zfqy8
+
+## Link to preprint:
+
+https://psyarxiv.com/uz2m9/
+
 ## Analysis
 
 The folder analysis contains the following documents:

@@ -1,0 +1,77 @@
+##CRN Codebook
+
+experiment: experiment ID (matching label in paper: 1A, 1B, 2A, 2B, 3A, 3B, 4, s3_verbalInterference,
+s4_shape+colors)
+subject: participant ID
+condition: nameability condition (high; low)
+conditionC: nameability condition (centered) (0.5 = high; -0.5 = low)
+totalTrialNum: trial number
+totalTrialNumC: trial number (centered by experiment)
+blockNum: block number
+categoryLoc: location of category box (left; right; up; down)
+axis: axis along which the image is to be categorized (UD - up-down, i.e., vertical axis; LR - left-right, i.e., horizontal axis)
+imageName: name of the stimulus to be categorized
+imageRotation: Rotation angle of the image in degrees (Experiments 2A and 2B only)
+imageType: type of stimulus (prototype or non-prototype images: prototype; 1ShapeDiff; 1ColorDiff)
+imageTypeC: type of stimulus, centered (0.5 = prototype; -0.5 = 1ColorDiff/ 1ShapeDiff)
+responseLoc: response location (left; right; up; down)
+isRight: whether the response is correct or not (0 = incorrect; 1 = correct)
+isRightAxis: Is the image categorized along the correct axis (left-right vs. up-down)? (0 = incorrect axis; 1 = correct axis)
+RT: reaction time (ms)
+totalTimeMinutes: total time spent on task (minutes)
+strategy1: Open-ended response to strategy question 1: “How did you decide whether to sort images into the four categories (A, B, C, D or top, down, bottom, right)? Did you have a particular strategy?”
+strategy2: Open-ended response to strategy question 2: “What colors/ shapes did you use to make your decision?”
+Age: self-reported participant age
+Gender: self-reported participant gender
+L1: participant’s self-reported first language(s)
+L2: participant’s self-reported second language(s)
+colorSet: Color set used (colorset1: Experiments 1A, 1B, 2A, S3; colorset2: Experiment 2B)
+color1: name of color in the first stimulus position (top right)
+color2: name of the color in the second stimulus position (bottom)
+color3: name of the color in the third stimulus position (top left)
+rgbcolor1: RGB values of color1
+rgbcolor2: RGB values of color2
+rgbcolor3: RGB values of color3
+shape1: Name of first shape feature in the image
+shape2: Name of the second shape feature in the image
+shape3: Name of the third shape feature in the image (if present)
+simpson1: Simpson’s diversity index of color1/ shape1
+simpson2: Simpson’s diversity index of color2/ shape2
+simpson3: Simpson’s diversity index of color3/ shape3
+avg_simpson: Average Simpson’s diversity index of the 2 or 3 image features
+avg_simpson_withinSubjCentered: Average Simpson’s diversity index centered within subject (meaningful for Experiments 2A and 2B)
+max_simpson: maximum value of Simpson’s diversity index for the 2 or 3 image features
+max_simpson_withinSubjCentered: maximum value of Simpson’s diversity index centered within subject (meaningful for Experiments 2A and 2B)
+discriminabilityRT12: average reaction time (in ms) for stimulus 1 and 2 from behavioral norming study
+discriminabilityRT13: average reaction time (in ms) for stimulus 1 and 3 from behavioral norming study
+discriminabilityRT23: average reaction time (in ms) for stimulus 2 and 3 from behavioral norming study
+discriminabilityRT12_z: average reaction time (in ms) for stimulus 1 and 2 from behavioral norming study (z-scored)
+discriminabilityRT13_z: average reaction time (in ms) for stimulus 1 and 3 from behavioral norming study (z-scored)
+discriminabilityRT23_z: average reaction time (in ms) for stimulus 2 and 3 from behavioral norming study (z-scored)
+avg_discr_rt: average reaction time (in ms) for all pairwise stimulus comparisons from behavioral norming study 
+avg_discr_rt_z: average reaction time (in ms) for all pairwise stimulus comparisons from behavioral norming study (z-scored)
+avg_discr_rt_withinSubjCentered: average reaction time (in ms) for all pairwise stimulus comparisons from behavioral norming study (centered within subject)
+max_discr_rt: maximum value of reaction times (in ms) for all pairwise stimulus comparisons from behavioral norming study 
+max_discr_rt_z: maximum value of reaction times (in ms) for all pairwise stimulus comparisons from behavioral norming study (z-scored)
+max_discr_rt_withinSubjCentered: maximum value of reaction times (in ms) for all pairwise stimulus comparisons from behavioral norming study (centered within subject)
+dE200012: delta E 2000 value for colors 1 and 2
+dE200013: delta E 2000 value for colors 1 and 3
+dE200023: delta E 2000 value for colors 2 and 3
+avg_dE2000: average delta E 2000 value for all pairwise stimulus comparisons 
+avg_dE2000_withinSubjCentered: average delta E 2000 value for all pairwise stimulus comparisons (centered within subject)
+max_dE2000: maximum delta E 2000 value of all pairwise stimulus comparisons 
+max_dE2000_withinSubjCentered: maximum delta E 2000 value of all pairwise stimulus comparisons (centered within subject)
+saturation1: saturation value for color1
+saturation2: saturation value for color2
+saturation3: saturation value for color3
+avg_saturation: average saturation value across color1, color2, and color3
+avg_saturation_withinSubjCentered: average saturation value across color1, color2, and color3 (centered within subject)
+max_saturation: maximum saturation value across color1, color2, and color3
+max_saturation_withinSubjCentered: maximum saturation value across color1, color2, and color3 (centered within subject)
+complexity1: description length (shape skeleton) of shape1
+complexity2: description length (shape skeleton) of shape2
+complexity3: description length (shape skeleton) of shape3
+avg_complexity: average description length across shape1, shape2, and shape3
+avg_complexity_z: average description length across shape1, shape2, and shape3 (z-scored)
+max_complexity: maximum description length across shape1, shape2, and shape3
+max_complexity_z: maximum description length across shape1, shape2, and shape3 (z-scored)

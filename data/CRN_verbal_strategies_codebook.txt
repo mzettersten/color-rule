@@ -1,0 +1,12 @@
+##CRN Verbal Strategies Codebook
+
+experiment: experiment ID (matching label in paper)
+subject: participant ID
+condition: nameability condition (high; low)
+verbalStrategy1: Open-ended response to strategy question 1: “How did you decide whether to sort images into category A or category B/ the four categories (A, B, C, D or top, down, bottom, right)? Did you have a particular strategy?” 
+verbalStrategy2: Open-ended response to strategy question 2: “What colors/ shapes did you use to make your decision?”
+singleFeature: whether the participant reports a single-feature strategy (1 = strategy reported; 0 = not reported)
+multipleFeature: whether the participant reports a multiple-feature strategy (1 = strategy reported; 0 = not reported)
+holisticStrategy: whether the participant reports a holistic strategy (1 = strategy reported; 0 = not reported)
+singleDimType: Study S4: Combined Color and Shape Feature Study: whether participants reported using a strategy that used a single dimension (shape or color) (1 = strategy reported; 0 = not reported)
+combinedDimType	Study: S4: Combined Color and Shape Feature Study: whether participants reported using a strategy that used both shape and color dimensions (1 = strategy reported; 0 = not reported)

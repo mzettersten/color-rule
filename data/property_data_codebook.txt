@@ -1,0 +1,146 @@
+## Property Data Codebook
+
+###color_discriminability_rt_data.csv
+
+subjCode: participant ID
+gender: gender of participant
+colorSet: Color set (colorset1: Experiments 1A, 1B, 2A, S3; colorset2: Experiment 2B)
+ratioDiffSame: ratio of different to same trials (2 = 2:1)
+whichKeySame: which key response is used for "same"
+isSame: trial type is "same" (TRUE) or "different" (FALSE)
+firstStimCategory: nameability condition of first image (high; low)
+secondStimCategory: nameability condition of second image (high; low) - always matches firstStimCategory
+firstStimPosition: position of first stimulus (color) on the screen (left; right; top; down)
+secondStimPosition: position of second stimulus (color) on the screen (left; right; top; down)
+firstStimName: name of first stimulus (experimenter-given color name)
+secondStimName: name of second stimulus (experimenter-given color name)
+firstR: r value (of RGB) for first stimulus (color)
+firstG: g value (of RGB) for first stimulus (color)
+firstB: b value (of RGB) for first stimulus (color)
+secondR: r value (of RGB) for second stimulus (color)
+secondG: g value (of RGB) for second stimulus (color)
+secondB: b value (of RGB) for second stimulus (color)
+trialIndex: trial number
+isRight: whether the response is correct or not (0 = incorrect; 1 = correct)
+RT: reaction time (ms)
+
+###color_properties.csv
+
+colorSet: Color set used (colorset1: Experiments 1A, 1B, 2A, S3; colorset2: Experiment 2B)
+colorName: unique name of color (given by experimenter)
+nameability: nameability condition color is used in (high; low)
+RGB: RGB values of color
+hue: hue value of color
+lightness: lightness value of color
+saturation: saturation value of color
+blue: delta E 2000 value of color (in the same colorset and condition) with the color blue	
+brown: delta E 2000value of color (in the same colorset and condition) with the color brown 
+darkblue: delta E 2000 value of color (in the same colorset and condition) with the color darkblue
+darkgreenblue: delta E 2000 value of color (in the same colorset and condition) with the color darkgreenblue	
+grey: delta E 2000 value of color (in the same colorset and condition) with the color grey
+lightgreen: delta E 2000 value of color (in the same colorset and condition) with the color lightgreen
+lightred: delta E 2000 value of color (in the same colorset and condition) with the color lightred
+mustard: delta E 2000 value of color (in the same colorset and condition) with the color mustard
+neonyellow: delta E 2000 value of color (in the same colorset and condition) with the color neonyellow
+orange: delta E 2000 value of color (in the same colorset and condition) with the color orange
+pink: delta E 2000 value of color (in the same colorset and condition) with the color pink
+pinkpurple: delta E 2000 value of color (in the same colorset and condition) with the color pinkpurple
+purple: delta E 2000 value of color (in the same colorset and condition) with the color purple
+red: delta E 2000 value of color (in the same colorset and condition) with the color red
+turquoise: delta E 2000 value of color (in the same colorset and condition) with the color turquoise
+yellow: delta E 2000 value of color (in the same colorset and condition) with the color yellow 
+yellowbrown: delta E 2000 value of color (in the same colorset and condition) with the color yellowbrown
+number_naming_responses: number of unique naming responses
+avg_words_per_response: average words per response
+percent_unique_words: # unique words / # naming responses 
+simpson_diversity: Simpson's diveristy index
+modal_response_agreement: percentage of naming responses that match the modal response
+modal_response: the modal (most frequent) response
+rt_different: average reaction time (in ms) from behavioral norming study for different trials
+rt_different_ci: 95% CI value for reaction times (in ms) from behavioral norming study for different trials
+rt_same: average reaction time (in ms) from behavioral norming study for same trials
+rt_same_ci: 95% CI value for reaction times (in ms) from behavioral norming study for same trials
+
+###color_properties_discriminability.csv
+
+colorSet: Color set used (colorset1: Experiments 1A, 1B, 2A, S3; colorset2: Experiment 2B)
+colorPair: Unique color pair (name is the two color names concatenated alphabetically)
+nameability: nameability condition colors are used in (high; low)
+RGB1: RGB value of color 1
+RGB2: RGB value of color 2
+dE2000:	delta E 2000 value of color pair
+rgbPair: Unique color pair in RGB values
+N: number of participants contributing data from behavioral norming study
+average_rt: average reaction time (in ms) for color pair (different trials)
+sd: standard deviation of reaction times for color pair
+se: standard error of reaction times for color pair	
+ci: 95% confidence interval of reaction times for color pair
+low_ci: lower bound of 95% confidence interval of reaction times for color pair
+high_ci: upper bound of 95% confidence interval of reaction times for color pair	
+average_rt_rounded: verage reaction time (in ms) for color pair (rounded)
+dE2000_rounded: delta E 2000 value of color pair (rounded)
+
+###shape_discriminability_rt_data.csv
+
+subjCode: participant ID
+gender: gender of participant
+stimulus_set: shape set (vg_shapes - Exps 3A & 3B)
+whichKeySame: which key response is used for "same"
+isSame: trial type is "same" (TRUE) or "different" (FALSE)
+firstStimCategory: nameability condition of first image (high; low)
+secondStimCategory: nameability condition of second image (high; low) - always matches firstStimCategory
+firstStim: name of first stimulus
+secondStim: name of second stimulus
+firstStimPosition: position of first stimulus (shape) on the screen (left; right; top; down)
+secondStimPosition: position of second stimulus (shape) on the screen (left; right; top; down)
+trialIndex: trial number
+isRight: whether the response is correct or not (0 = incorrect; 1 = correct)
+rt: reaction time (ms)
+
+###shape_properties.csv
+
+shape: Shape image name (Exps 3A and 3B)
+nameability: nameability condition shape is used in (high; low)
+exp3A: Is the shape used in Exp 3A? (yes; no)
+exp3B: Is the shape used in Exp 3B? (yes; no)
+description_length: Description length of the image's shape skeleton (Feldman & Singh, 2006)
+rt_different: average reaction time (in ms) from behavioral norming study for different trials
+rt_different_ci: 95% CI value for reaction times (in ms) from behavioral norming study for different trials
+rt_same: average reaction time (in ms) from behavioral norming study for same trials
+rt_same_ci: 95% CI value for reaction times (in ms) from behavioral norming study for same trials
+number_naming_responses: number of unique naming responses
+avg_words_per_response: average words per response
+percent_unique_words: # unique words / # naming responses 
+simpson_diversity: Simpson's diveristy index
+modal_response_agreement: percentage of naming responses that match the modal response
+modal_response: the modal (most frequent) response
+association_value: Association value of the shape (from Vanderplas & Garvin, 1959)
+
+###shape_properties_discriminability.csv
+
+isSame: shape pair is "same" (TRUE) or "different" (FALSE)
+nameability: nameability condition shapes are used in (high; low)
+colorPair: Unique shape pair (name is the two shape names concatenated alphabetically)
+shape1: name of shape 1
+shape2: name of shape 2
+N: number of participants contributing data from behavioral norming study
+average_rt: average reaction time (in ms) for shape pair
+sd: standard deviation of reaction times for shape pair
+se: standard error of reaction times for shape pair	
+ci: 95% confidence interval of reaction times for shape pair
+low_ci: lower bound of 95% confidence interval of reaction times for shape pair
+high_ci: upper bound of 95% confidence interval of reaction times for shape pair
+exp3A: Is the shape pair used in Exp 3A? (yes; no)
+exp3B: Is the shape pair used in Exp 3B? (yes; no)
+
+##tangram_properties.csv
+
+shape: Tangram shape image name (Exp 4)
+number_naming_responses: number of unique naming responses
+avg_words_per_response: average words per response
+percent_unique_words: # unique words / # naming responses 
+simpson_diversity: Simpson's diveristy index
+modal_response_agreement: percentage of naming responses that match the modal response
+modal_response: the modal (most frequent) response
+exp4: Is the shape used in Exp 4? (yes; no)
+nameability: nameability condition shape is used in (high; low)

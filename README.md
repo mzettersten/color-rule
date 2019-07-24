@@ -65,6 +65,10 @@ The folder data contains the following documents:
 
 The folder stimuli contains all stimuli used across the experiments reported in the paper and in the supplementary materials.
 
+## Figures
+
+The folder figures contains figures from the manuscript (in some cases, some additional editing was conducted in Keynote, e.g. adding stimulus images to plots).
+
 ## Questions
 
 Feel free to contact me at **zettersten@wisc.edu** if you have any comments or questions about the data or the analyses.

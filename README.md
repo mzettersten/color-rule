@@ -7,7 +7,7 @@ What are the cognitive consequences of having a name for something? Having a wor
 
 ## Link to OSF project:
 
-https://osf.io/fmhku/?view_only=a4fb62864d2446a6bfff6fd90b2e49ce
+https://osf.io/fmhku/
 
 ## Link to AsPredicted pre-registration forms:
 

@@ -1,20 +1,21 @@
 ##### Analysis Overview ####
 
 #load libraries
-library(datasets) #version 3.5.2
-library(graphics) #version 3.5.2
-library(grDevices) #version 3.5.2
-library(methods) #version 3.5.2
-library(stats) #version 3.5.2
-library(utils) #version 3.5.2
-library(car) #version 3.0-2
-library(Matrix) #version 1.2-15
-library(cowplot) #version 0.9.3
-library(lme4) #version 1.1-18-1
+source('summarizeData.R') #helper functions for summarizing data
+library(datasets) #version 3.6.1
+library(graphics) #version 3.6.1
+library(grDevices) #version 3.6.1
+library(methods) #version 3.6.1
+library(stats) #version 3.6.1
+library(utils) #version 3.6.1
+library(car) #version 3.0-3
+library(Matrix) #version 1.2-17
+library(lme4) #version 1.1-21
 library(plyr) #version 1.8.4
 library(tidyverse) #version 1.2.1
-library(effsize) #version 0.7.4
-source('summarizeData.R') #helper functions for summarizing data
+library(effsize) #version 0.7.6
+library(cowplot) #version 1.0.0
+theme_set(theme_cowplot())
 source('vif.mer.R') #function for checking for multicollinearity
 
 #### DATA ####
@@ -85,8 +86,9 @@ mLearn_1A <- glmer(isRight~conditionC+ (1|subject),data=subset(d,experiment=="1A
 summary(mLearn_1A)
 confint(mLearn_1A,method="Wald")[2:3,]
 
-#model fit controlling for item type and random item effects
+#model fit controlling for item type and random item effects -including maximal random effects structure (does not converge)
 mLearn_1A_item_non_conv <- glmer(isRight~conditionC+imageTypeC+ (1+imageTypeC|subject)+(1|imageName),data=subset(d,experiment=="1A"),family=binomial)
+#final model with simplified random effects structure
 #model fails to converge, so simplify by removing random slope for imageTypeC
 mLearn_1A_item <- glmer(isRight~conditionC+imageTypeC+ (1|subject)+(1|imageName),data=subset(d,experiment=="1A"),family=binomial)
 summary(mLearn_1A_item)
@@ -147,15 +149,19 @@ mLearn_1B <- glmer(isRight~conditionC+ (1|subject),data=subset(d,experiment=="1B
 summary(mLearn_1B)
 confint(mLearn_1B,method="Wald")[2:3,]
 
-#model fit controlling for item type and random item effects
+#model fit controlling for item type and random item effects (maximal random effects structure)
 mLearn_1B_item <- glmer(isRight~conditionC+imageTypeC+ (1+imageTypeC|subject)+(1|imageName),data=subset(d,experiment=="1B"),family=binomial)
 summary(mLearn_1B_item) 
 confint(mLearn_1B_item,method="Wald")[5:7,]
 
-#interaction with trial number
+#interaction with trial number (maximal random effects structure - does not converge)
 mTrialInteraction_1B <- glmer(isRight~conditionC*totalTrialNumC+ (1+totalTrialNumC|subject),data=subset(d,experiment=="1B"),family=binomial)
+#model yields a singular fit, so simplify by removing random slope for totalTrialNumC
+#see ?isSingular for more information
+#final model (simplifying random effects structure by removing by-subject random slope for trial number, yields qualitatively similar results)
+mTrialInteraction_1B <- glmer(isRight~conditionC*totalTrialNumC+ (1|subject),data=subset(d,experiment=="1B"),family=binomial)
 summary(mTrialInteraction_1B)
-confint(mTrialInteraction_1B,method="Wald")[4:7,]
+confint(mTrialInteraction_1B,method="Wald")[2:5,]
 
 #test for an interaction between experiment 1A and 1B
 #center experiment so condition effect is interpretable
@@ -201,12 +207,14 @@ subjOverall_byBlock_exp1B <- summarySEwithin(subset(subj_blocks,experiment=="1B"
 ## 1A
 #plot by block
 p1A <- ggplot(subjOverall_byBlock_exp1A, aes(blockNum,accuracy,color=condition,group=condition))+
-  geom_line(size=2,position=position_dodge(.05))+
+  geom_line(aes(linetype=condition),size=2,position=position_dodge(.05))+
   geom_errorbar(aes(ymin=accuracy-se,ymax=accuracy+se),width=0,size=0.75,position=position_dodge(.05))+
-  geom_point(aes(fill=condition),size=4,position=position_dodge(.05))+
+  geom_point(aes(fill=condition, shape=condition),size=4,position=position_dodge(.05))+
   theme_classic(base_size=24)+
   scale_color_brewer(palette="Set1",name="Nameability")+
   scale_fill_brewer(palette="Set1",name="Nameability")+
+  scale_linetype_discrete(name="Nameability")+
+  scale_shape_discrete(name="Nameability")+
   xlab("Block\nExperiment 1A")+
   ylab("Training Accuracy")+
   ylim(c(0.48,1))+
@@ -215,12 +223,14 @@ p1A <- ggplot(subjOverall_byBlock_exp1A, aes(blockNum,accuracy,color=condition,g
 
 #1B
 p1B <-  ggplot(subjOverall_byBlock_exp1B, aes(blockNum,accuracy,color=condition,group=condition))+
-  geom_line(size=2,position=position_dodge(.05))+
+  geom_line(aes(linetype=condition),size=2,position=position_dodge(.05))+
   geom_errorbar(aes(ymin=accuracy-se,ymax=accuracy+se),width=0,size=0.75,position=position_dodge(.05))+
-  geom_point(aes(fill=condition),size=4,position=position_dodge(.05))+
+  geom_point(aes(fill=condition, shape=condition),size=4,position=position_dodge(.05))+
   theme_classic(base_size=24)+
   scale_color_brewer(palette="Set1",name="Nameability")+
   scale_fill_brewer(palette="Set1",name="Nameability")+
+  scale_linetype_discrete(name="Nameability")+
+  scale_shape_discrete(name="Nameability")+
   xlab("Block\nExperiment 1B")+
   ylab("Training Accuracy")+
   ylim(c(0.48,1))+
@@ -228,7 +238,7 @@ p1B <-  ggplot(subjOverall_byBlock_exp1B, aes(blockNum,accuracy,color=condition,
   theme(legend.position=c(.7, .2), legend.text=element_text(size=16),legend.title=element_text(size=16,face="bold"))
 
 #plot together
-p_exp1 <- plot_grid(p1A,p1B,ncol=2,labels=c("A","B"))
+p_exp1 <- plot_grid(p1A,p1B,ncol=2,labels=c("A","B"), label_size=24)
 p_exp1
 
 ####Experiment 2A####
@@ -237,7 +247,8 @@ p_exp1
 subj_2A <- filter(d,experiment=="2A") %>%
   group_by(subject,condition,Age,Gender,L1) %>%
   summarize(
-    accuracy=mean(isRight),
+    accuracy=mean(isRight[RT<=5000&RT>=200]),
+    accuracy_all=mean(isRight),
     rt=mean(RT[RT<=5000&RT>=200]),
     num_excludedTrials_rt=sum(RT>5000|RT<200),
     total_trials = sum(!is.na(RT)))
@@ -245,7 +256,8 @@ subj_2A <- filter(d,experiment=="2A") %>%
 subj_2A_overall <- filter(d,experiment=="2A") %>%
   group_by(subject,Age,Gender,L1) %>%
   summarize(
-    accuracy=mean(isRight),
+    accuracy=mean(isRight[RT<=5000&RT>=200]),
+    accuracy_all=mean(isRight),
     rt=mean(RT[RT<=5000&RT>=200]),
     num_excludedTrials_rt=sum(RT>5000|RT<200),
     total_trials = sum(!is.na(RT)))
@@ -253,7 +265,7 @@ subj_2A_overall <- filter(d,experiment=="2A") %>%
 #overall descriptives
 exp2A_descriptives <- subj_2A_overall %>%
   group_by() %>%
-  summarize(N=sum(!is.na(unique(subject))), gender_f=sum(Gender=="Female"), avg_age = round(mean(Age,na.rm=T),2), min_age=round(min(Age,na.rm=T),2),max_age=round(max(Age,na.rm=T),2), native_lang=sum(grepl("English",L1)))
+  summarize(N=sum(!is.na(unique(subject))), gender_f=sum(Gender=="Female"), avg_age = round(mean(Age,na.rm=T),2), min_age=round(min(Age,na.rm=T),2),max_age=round(max(Age,na.rm=T),2), native_lang=sum(grepl("English",L1)),proportion_rtExclusions=sum(num_excludedTrials_rt)/sum(total_trials))
 exp2A_descriptives
 
 #overall accuracy
@@ -280,36 +292,59 @@ ggplot(subj_2A,aes(rt,accuracy,color=condition))+
   geom_point()+
   geom_smooth(method="lm")
 
-#main model fit
+#main model fit - excluding very short (<200ms) and very long (>5000ms) RTs (maximal random effects structure)
+mLearn_2A_rtExclusions <- glmer(isRight~conditionC+(1+conditionC|subject),data=filter(d, experiment=="2A"&(RT>=200&RT<=5000)),family=binomial)
+summary(mLearn_2A_rtExclusions)  
+confint(mLearn_2A_rtExclusions,method="Wald")[4:5,]
+
+#model fit controlling for item type and random item effects - excluding very short (<200ms) and very long (>5000ms) RTs
+#maximal random effects structure  (does not converge)
+mLearn_2A_item_rtExclusions <- glmer(isRight~conditionC+ imageTypeC+(1+conditionC+imageTypeC|subject)+ (1|imageName),data=filter(d, experiment=="2A"&(RT>=200&RT<=5000)),family=binomial,control=glmerControl(optimizer="bobyqa"))
+#model yields a singular fit, so simplify by removing random slope for imageTypeC
+#see ?isSingular for more information
+#final model (random effects pruned)
+mLearn_2A_item_rtExclusions <- glmer(isRight~conditionC+ imageTypeC+(1+conditionC|subject)+ (1|imageName),data=filter(d, experiment=="2A"&(RT>=200&RT<=5000)),family=binomial,control=glmerControl(optimizer="bobyqa"))
+summary(mLearn_2A_item_rtExclusions)  
+confint(mLearn_2A_item_rtExclusions,method="Wald")[5:7,]
+
+#main model fit - all trials
 mLearn_2A <- glmer(isRight~conditionC+(1+conditionC|subject),data=filter(d, experiment=="2A"),family=binomial)
 summary(mLearn_2A)  
 confint(mLearn_2A,method="Wald")[4:5,]
 
-#model fit controlling for item type and random item effects
+#model fit controlling for item type and random item effects - all trials
 mLearn_2A_item <- glmer(isRight~conditionC+ imageTypeC+(1+conditionC+imageTypeC|subject)+ (1|imageName),data=filter(d, experiment=="2A"),family=binomial,control=glmerControl(optimizer="bobyqa"))
+#model yields a singular fit, so simplify by removing random slope for imageTypeC
+#see ?isSingular for more information
+#final model (random effects pruned)
+mLearn_2A_item <- glmer(isRight~conditionC+ imageTypeC+(1+conditionC|subject)+ (1|imageName),data=filter(d, experiment=="2A"),family=binomial,control=glmerControl(optimizer="bobyqa"))
 summary(mLearn_2A_item)  
-confint(mLearn_2A_item,method="Wald")[8:10,]
+confint(mLearn_2A_item,method="Wald")[5:7,]
 
-#main model fit - excluding very short (<200ms) and very long (>5000ms) RTs
-mLearn_2A_rtExclusions <- glmer(isRight~conditionC+(1+conditionC|subject),data=filter(d, experiment=="2A"&(RT>=200&RT<=5000)),family=binomial)
-summary(mLearn_2A_rtExclusions)  
-confint(mLearn_2A,method="Wald")[4:5,]
+#interaction with trial number - excluding very short (<200ms) and very long (>5000ms) RTs
+# model with maximal random effects structure (does not converge)
+mTrialInteraction_2A_rtExclusions <- glmer(isRight~conditionC*totalTrialNumC+(1+conditionC+totalTrialNumC+conditionC:totalTrialNumC|subject),data=filter(d, experiment=="2A"&(RT>=200&RT<=5000)),family=binomial,control=glmerControl(optimizer="bobyqa"))
+#model yields a singular fit, so simplify by removing random slope for the conditionC by totalTrialNumC interaction
+#see ?isSingular for more information
+#final  model with simplified random effects structure
+mTrialInteraction_2A_rtExclusions <- glmer(isRight~conditionC*totalTrialNumC+(1+conditionC+totalTrialNumC|subject),data=filter(d, experiment=="2A"&(RT>=200&RT<=5000)),family=binomial,control=glmerControl(optimizer="bobyqa"))
+summary(mTrialInteraction_2A_rtExclusions) 
+confint(mTrialInteraction_2A_rtExclusions,method="Wald")
 
-#model fit controlling for item type and random item effects - excluding very short (<200ms) and very long (>5000ms) RTs
-mLearn_2A_item_rtExclusions <- glmer(isRight~conditionC+ imageTypeC+(1+conditionC+imageTypeC|subject)+ (1|imageName),data=filter(d, experiment=="2A"&(RT>=200&RT<=5000)),family=binomial,control=glmerControl(optimizer="bobyqa"))
-summary(mLearn_2A_item_rtExclusions)  
-confint(mLearn_2A_item_rtExclusions,method="Wald")[8:10,]
-
-#interaction with trial number
+#interaction with trial number - all trials
+# model with maximal random effects structure (does not converge)
 mTrialInteraction_2A <- glmer(isRight~conditionC*totalTrialNumC+(1+conditionC+totalTrialNumC+conditionC:totalTrialNumC|subject),data=filter(d, experiment=="2A"),family=binomial,control=glmerControl(optimizer="bobyqa"))
-#model does not converge - simplify by successively removing lower-order random effect slopes
-mTrialInteraction_2A <- glmer(isRight~conditionC*totalTrialNumC+(1+conditionC+conditionC:totalTrialNumC|subject),data=filter(d, experiment=="2A"),family=binomial,control=glmerControl(optimizer="bobyqa"))
+#model yields a singular fit, so simplify by removing random slope for  conditionC by totalTrialNumC interaction
+#see ?isSingular for more information
+#the resulting model does not  converge, so also remove random slope for totalTrialNumC (since variance estimate is very close to zero)
+#final  model with simplified random effects structure
+mTrialInteraction_2A <- glmer(isRight~conditionC*totalTrialNumC+(1+conditionC|subject),data=filter(d, experiment=="2A"),family=binomial,control=glmerControl(optimizer="bobyqa"))
 summary(mTrialInteraction_2A) 
 confint(mTrialInteraction_2A,method="Wald")
 
 #effect size
 subj_2A_differences <- d %>%
-  filter(experiment=="2A") %>%
+  filter(experiment=="2A"&(RT>=200&RT<=5000)) %>%
   group_by(subject) %>%
   summarize(accuracy_difference=mean(isRight[condition=="high"])-mean(isRight[condition=="low"]))
 d_z <- mean(subj_2A_differences$accuracy_difference)/sd(subj_2A_differences$accuracy_difference)
@@ -321,7 +356,8 @@ psych::d.ci(d_z,n1=39)
 subj_2B <- filter(d,experiment=="2B") %>%
   group_by(subject,condition,Age,Gender,L1) %>%
   summarize(
-    accuracy=mean(isRight),
+    accuracy=mean(isRight[RT<=5000&RT>=200]),
+    accuracy_all=mean(isRight),
     rt=mean(RT[RT<=5000&RT>=200]),
     num_excludedTrials_rt=sum(RT>5000|RT<200),
     total_trials = sum(!is.na(RT)))
@@ -329,15 +365,17 @@ subj_2B <- filter(d,experiment=="2B") %>%
 subj_2B_overall <- filter(d,experiment=="2B") %>%
   group_by(subject,Age,Gender,L1) %>%
   summarize(
-    accuracy=mean(isRight),
+    accuracy=mean(isRight[RT<=5000&RT>=200]),
+    accuracy_all=mean(isRight),
     rt=mean(RT[RT<=5000&RT>=200]),
     num_excludedTrials_rt=sum(RT>5000|RT<200),
     total_trials = sum(!is.na(RT)))
 
+
 #overall descriptives
 exp2B_descriptives <- subj_2B_overall %>%
   group_by() %>%
-  summarize(N=sum(!is.na(unique(subject))), gender_f=sum(Gender=="Female"), avg_age = round(mean(Age,na.rm=T),2), min_age=round(min(Age,na.rm=T),2),max_age=round(max(Age,na.rm=T),2), native_lang=sum(grepl("English",L1)))
+  summarize(N=sum(!is.na(unique(subject))), gender_f=sum(Gender=="Female"), avg_age = round(mean(Age,na.rm=T),2), min_age=round(min(Age,na.rm=T),2),max_age=round(max(Age,na.rm=T),2), native_lang=sum(grepl("English",L1)),proportion_rtExclusions=sum(num_excludedTrials_rt)/sum(total_trials))
 exp2B_descriptives
 
 #overall accuracy
@@ -363,40 +401,88 @@ ggplot(subj_2B,aes(rt,accuracy,color=condition))+
   geom_point()+
   geom_smooth(method="lm")
 
-#main model fit
-mLearn_2B <- glmer(isRight~conditionC+(1+conditionC|subject),data=filter(d, experiment=="2B"),family=binomial)
-summary(mLearn_2B)  
-confint(mLearn_2B,method="Wald")[4:5,]
-
-#model fit controlling for item type and random item effects
-mLearn_2B_item <- glmer(isRight~conditionC+ imageTypeC+(1+conditionC+imageTypeC|subject)+ (1|imageName),data=filter(d, experiment=="2B"),family=binomial)
-summary(mLearn_2B_item)  
-confint(mLearn_2A_item,method="Wald")[8:10,]
-
 #main model fit - excluding very short (<200ms) and very long (>5000ms) RTs
 mLearn_2B_rtExclusions <- glmer(isRight~conditionC+(1+conditionC|subject),data=filter(d, experiment=="2B"&(RT>=200&RT<=5000)),family=binomial)
 summary(mLearn_2B_rtExclusions)  
-confint(mLearn_2B,method="Wald")[4:5,]
+confint(mLearn_2B_rtExclusions,method="Wald")[4:5,]
 
 #model fit controlling for item type and random item effects - excluding very short (<200ms) and very long (>5000ms) RTs
 mLearn_2B_item_rtExclusions <- glmer(isRight~conditionC+ imageTypeC+(1+conditionC+imageTypeC|subject)+ (1|imageName),data=filter(d, experiment=="2B"&(RT>=200&RT<=5000)),family=binomial)
 summary(mLearn_2B_item_rtExclusions)  
 confint(mLearn_2B_item_rtExclusions,method="Wald")[8:10,]
 
-#interaction with trial number
+#main model fit - all trials
+mLearn_2B <- glmer(isRight~conditionC+(1+conditionC|subject),data=filter(d, experiment=="2B"),family=binomial)
+summary(mLearn_2B)  
+confint(mLearn_2B,method="Wald")[4:5,]
+
+#model fit controlling for item type and random item effects - all trials
+mLearn_2B_item <- glmer(isRight~conditionC+ imageTypeC+(1+conditionC+imageTypeC|subject)+ (1|imageName),data=filter(d, experiment=="2B"),family=binomial)
+summary(mLearn_2B_item)  
+confint(mLearn_2B_item,method="Wald")[8:10,]
+
+#interaction with trial number -  excluding very short (<200ms) and very long (>5000ms) RTs
+#model with maximal random effects structure (does not converge)
+mTrialInteraction_2B_rtExclusions <- glmer(isRight~conditionC*totalTrialNumC+(1+conditionC+totalTrialNumC+conditionC:totalTrialNumC|subject),data=filter(d, experiment=="2B"&(RT>=200&RT<=5000)),family=binomial,control=glmerControl(optimizer="bobyqa"))
+#model yields a singular fit, so simplify by removing random slopes for the conditionC by totalTrialNumC interaction
+#see ?isSingular for more information
+#final model (simplified random effects structure)
+mTrialInteraction_2B_rtExclusions <- glmer(isRight~conditionC*totalTrialNumC+(1+conditionC+totalTrialNumC|subject),data=filter(d, experiment=="2B"&(RT>=200&RT<=5000)),family=binomial,control=glmerControl(optimizer="bobyqa"))
+summary(mTrialInteraction_2B_rtExclusions) 
+confint(mTrialInteraction_2B_rtExclusions,method="Wald")
+
+#interaction with trial number - all trials
+#model with maximal random effects structure (does not converge)
 mTrialInteraction_2B <- glmer(isRight~conditionC*totalTrialNumC+(1+conditionC+totalTrialNumC+conditionC:totalTrialNumC|subject),data=filter(d, experiment=="2B"),family=binomial,control=glmerControl(optimizer="bobyqa"))
+#model yields a singular fit, so simplify by removing random slope for conditionC by totalTrialNumC interaction
+#see ?isSingular for more information
+#final model (simplified random effects structure)
+mTrialInteraction_2B <- glmer(isRight~conditionC*totalTrialNumC+(1+conditionC+totalTrialNumC |subject),data=filter(d, experiment=="2B"),family=binomial,control=glmerControl(optimizer="bobyqa"))
 summary(mTrialInteraction_2B) 
 confint(mTrialInteraction_2B,method="Wald")
 
 #effect size
 subj_2B_differences <- d %>%
-  filter(experiment=="2B") %>%
+  filter(experiment=="2B"&(RT>=200&RT<=5000)) %>%
   group_by(subject) %>%
   summarize(accuracy_difference=mean(isRight[condition=="high"])-mean(isRight[condition=="low"]))
 d_z <- mean(subj_2B_differences$accuracy_difference)/sd(subj_2B_differences$accuracy_difference)
 psych::d.ci(d_z,n1=39)
 
-#Low-performing participants across experiments 2A and 2B
+#Low-performing participants across experiments 2A and 2B -  excluding very short (<200ms) and very long (>5000ms) RTs
+#summarize subject accuracy
+subj_2 <- filter(d,experiment %in% c("2A","2B")&(RT>=200&RT<=5000)) %>%
+  group_by(subject,experiment,condition) %>%
+  summarize(accuracy=mean(isRight))
+#summarizing subject performance
+subj_2_block <- filter(d,experiment %in% c("2A","2B")&(RT>=200&RT<=5000)) %>%
+  group_by(subject,experiment,condition,blockNum) %>%
+  summarize(accuracy=mean(isRight))
+#participants with lower than 75% accuracy on final block
+non_learners_high <- unique(subj_2_block$subject[subj_2_block$accuracy<0.75&subj_2_block$blockNum==6&subj_2_block$condition=="high"])
+non_learners_low <- unique(subj_2_block$subject[subj_2_block$accuracy<0.75&subj_2_block$blockNum==6&subj_2_block$condition=="low"])
+subj_2$non_learner_high <- ifelse(subj_2$subject %in% non_learners_high,1,0)
+subj_2$non_learner_low <- ifelse(subj_2$subject %in% non_learners_low,1,0)
+#classifying non-learners/ low learners
+subj_2$non_learner_classification <- ifelse(subj_2$non_learner_high!=subj_2$non_learner_low & subj_2$non_learner_high==1,"non_learner_high_only",
+                                            ifelse(subj_2$non_learner_high!=subj_2$non_learner_low & subj_2$non_learner_low==1,"non_learner_low_only",
+                                                   ifelse(subj_2$non_learner_high==1&subj_2$non_learner_low==1,"non_learner_both","learner")))
+#spread dataframe
+subj_2_wide <- subj_2 %>%
+  spread(condition,accuracy)
+#distribution of non-learners/ low learners
+table(subj_2_wide$non_learner_classification)
+non_learner_dist <- c(8,3,17)
+prob <- c(1/3,1/3,1/3)
+#3 high condition, 17 low condition, 8 both
+library(EMT)
+multinomial.test(non_learner_dist,prob, useChisq = T)
+#model fit with these participants removed
+m <- glmer(isRight~conditionC+(1+conditionC|subject),data=filter(d, (experiment %in% c("2A","2B"))&(RT>=200&RT<=5000)&!(subject %in% non_learners_low) &!(subject %in% non_learners_high)),family=binomial)
+summary(m)  
+confint(m,method="Wald")
+
+#Low-performing participants across experiments 2A and 2B - ALL TRIALS
 #summarize subject accuracy
 subj_2 <- filter(d,experiment %in% c("2A","2B")) %>%
   group_by(subject,experiment,condition) %>%
@@ -421,7 +507,7 @@ subj_2_wide <- subj_2 %>%
 table(subj_2_wide$non_learner_classification)
 non_learner_dist <- c(9,3,15)
 prob <- c(1/3,1/3,1/3)
-#3 high condition, 18 low condition, 9 both
+#3 high condition, 15 low condition, 9 both
 library(EMT)
 multinomial.test(non_learner_dist,prob, useChisq = T)
 #model fit with these participants removed
@@ -429,34 +515,57 @@ m <- glmer(isRight~conditionC+(1+conditionC|subject),data=filter(d, (experiment 
 summary(m)  
 confint(m,method="Wald")
 
-#predict accuracy from color feature characteristics
-m <- glmer(isRight~avg_simpson_withinSubjCentered + imageTypeC+avg_dE2000_withinSubjCentered+avg_saturation_withinSubjCentered+avg_discr_rt_z+(1+avg_simpson_withinSubjCentered+imageTypeC+avg_discr_rt_z+avg_dE2000_withinSubjCentered+avg_saturation_withinSubjCentered|subject)+ (1|imageName),
-        data=filter(d, experiment %in% c("2A","2B")),
-        family=binomial,
-        control=glmerControl(optimizer="bobyqa"))
-#does not converge; simplify random effects by removing a less important random slope (imageTypeC)
-m <- glmer(isRight~avg_simpson_withinSubjCentered + imageTypeC+avg_dE2000_withinSubjCentered+avg_saturation_withinSubjCentered+avg_discr_rt_z+(1+avg_simpson_withinSubjCentered+avg_discr_rt_z+avg_dE2000_withinSubjCentered+avg_saturation_withinSubjCentered|subject)+ (1|imageName),
-        data=filter(d, experiment %in% c("2A","2B")),
-        family=binomial,
-        control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=50000)))
+#predict accuracy from color feature characteristics - excluding very short (<200ms) and very long (>5000ms) RTs
+#model with maximal random effects structure (does not converge)
+m <- glmer(isRight~avg_simpson_withinSubjCentered + imageTypeC+avg_dE2000_withinSubjCentered+avg_saturation_withinSubjCentered+avg_discr_rt_z+dimensiondiscriminabilityRT_100_z+(1+avg_simpson_withinSubjCentered+ imageTypeC+avg_dE2000_withinSubjCentered+avg_saturation_withinSubjCentered+avg_discr_rt_z+dimensiondiscriminabilityRT_100_z|subject)+ (1|imageName),
+           data=filter(d, experiment %in% c("2A","2B")&(RT>=200&RT<=5000)),
+           family=binomial,
+           control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=50000)))
+#final model (simplified random effects structure)
+m <- glmer(isRight~avg_simpson_withinSubjCentered + imageTypeC+avg_dE2000_withinSubjCentered+avg_saturation_withinSubjCentered+avg_discr_rt_z+dimensiondiscriminabilityRT_100_z+(1+avg_simpson_withinSubjCentered+avg_discr_rt_z+avg_saturation_withinSubjCentered|subject)+ (1|imageName),
+           data=filter(d, experiment %in% c("2A","2B")&(RT>=200&RT<=5000)),
+           family=binomial,
+           control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=50000)))
 vif.mer(m) #check for multicollinearity
 summary(m)
-confint(m,method="Wald")[17:22,]
+confint(m,method="Wald")
+
+#predict accuracy from color feature characteristics - all trials
+#model with maximal random effects structure (does not converge)
+m <- glmer(isRight~avg_simpson_withinSubjCentered + imageTypeC+avg_dE2000_withinSubjCentered+avg_saturation_withinSubjCentered+avg_discr_rt_z+dimensiondiscriminabilityRT_100_z+(1+avg_simpson_withinSubjCentered+ imageTypeC+avg_dE2000_withinSubjCentered+avg_saturation_withinSubjCentered+avg_discr_rt_z+dimensiondiscriminabilityRT_100_z|subject)+ (1|imageName),
+           data=filter(d, experiment %in% c("2A","2B")),
+           family=binomial,
+           control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=50000)))
+#final model (simplified random effects structure)
+m <- glmer(isRight~avg_simpson_withinSubjCentered + imageTypeC+avg_dE2000_withinSubjCentered+avg_saturation_withinSubjCentered+avg_discr_rt_z+dimensiondiscriminabilityRT_100_z+(1+avg_simpson_withinSubjCentered+avg_saturation_withinSubjCentered+avg_discr_rt_z|subject)+ (1|imageName),
+           data=filter(d, experiment %in% c("2A","2B")),
+           family=binomial,
+           control=glmerControl(optimizer="bobyqa",optCtrl=list(maxfun=50000)))
+vif.mer(m) #check for multicollinearity
+summary(m)
+confint(m,method="Wald")
 
 ####Experiments 2A-2B - Graph####
 
+#summarize subject accuracy- excluding very short (<200ms) and very long (>5000ms) RTs 
+subj_blocks_2AB_rtExclusions <- filter(d,experiment %in% c("2A","2B")&(RT>=200&RT<=5000)) %>%
+  group_by(experiment,subject,condition,blockNum) %>%
+  summarize(accuracy=mean(isRight))
+
 #summarize across subjects for Experiments 2A and 2B
-subjOverall_byBlock_exp2A <- summarySEwithin(subset(subj_blocks,experiment=="2A"),"accuracy",betweenvars=c(),withinvars=c("condition","blockNum"),idvar="subject")
-subjOverall_byBlock_exp2B <- summarySEwithin(subset(subj_blocks,experiment=="2B"),"accuracy",betweenvars=c(),withinvars=c("condition","blockNum"),idvar="subject")
+subjOverall_byBlock_exp2A <- summarySEwithin(subset(subj_blocks_2AB_rtExclusions,experiment=="2A"),"accuracy",betweenvars=c(),withinvars=c("condition","blockNum"),idvar="subject")
+subjOverall_byBlock_exp2B <- summarySEwithin(subset(subj_blocks_2AB_rtExclusions,experiment=="2B"),"accuracy",betweenvars=c(),withinvars=c("condition","blockNum"),idvar="subject")
 
 #plot by block
 p2A <- ggplot(subjOverall_byBlock_exp2A, aes(blockNum,accuracy,color=condition,group=condition))+
-  geom_line(size=2,position=position_dodge(.05))+
+  geom_line(aes(linetype=condition),size=2,position=position_dodge(.05))+
   geom_errorbar(aes(ymin=accuracy-se,ymax=accuracy+se),width=0,size=0.75,position=position_dodge(.05))+
-  geom_point(aes(fill=condition),size=4,position=position_dodge(.05))+
+  geom_point(aes(fill=condition, shape=condition),size=4,position=position_dodge(.05))+
   theme_classic(base_size=24)+
   scale_color_brewer(palette="Set1",name="Nameability")+
   scale_fill_brewer(palette="Set1",name="Nameability")+
+  scale_linetype_discrete(name="Nameability")+
+  scale_shape_discrete(name="Nameability")+
   xlab("Block\nExperiment 2A")+
   ylab("Training Accuracy")+
   scale_y_continuous(breaks=seq(0.4,1,0.1), limits=c(0.38,1))+
@@ -464,19 +573,21 @@ p2A <- ggplot(subjOverall_byBlock_exp2A, aes(blockNum,accuracy,color=condition,g
 
 #2B
 p2B <- ggplot(subjOverall_byBlock_exp2B, aes(blockNum,accuracy,color=condition,group=condition))+
-  geom_line(size=2,position=position_dodge(.05))+
+  geom_line(aes(linetype=condition),size=2,position=position_dodge(.05))+
   geom_errorbar(aes(ymin=accuracy-se,ymax=accuracy+se),width=0,size=0.75,position=position_dodge(.05))+
-  geom_point(aes(fill=condition),size=4,position=position_dodge(.05))+
+  geom_point(aes(fill=condition, shape=condition),size=4,position=position_dodge(.05))+
   theme_classic(base_size=24)+
   scale_color_brewer(palette="Set1",name="Nameability")+
   scale_fill_brewer(palette="Set1",name="Nameability")+
+  scale_linetype_discrete(name="Nameability")+
+  scale_shape_discrete(name="Nameability")+
   xlab("Block\nExperiment 2B")+
   ylab("Training Accuracy")+
   scale_y_continuous(breaks=seq(0.4,1,0.1), limits=c(0.38,1))+
   theme(legend.position=c(.7, .3), legend.text=element_text(size=16),legend.title=element_text(size=16,face="bold"))
 
 #plot together
-p_exp2=plot_grid(p2A,p2B,ncol=2,labels=c("A","B"))
+p_exp2=plot_grid(p2A,p2B,ncol=2,labels=c("A","B"), label_size=24)
 p_exp2
 
 ####Experiments 1A, 1B, 2A, 2B - Color Properties####
@@ -542,7 +653,7 @@ color_properties_rt_sameDiff <- color_properties %>%
   mutate(rt=as.numeric(as.character(rt)),ci=as.numeric(as.character(ci)))
 #color set 1 plot
 p1 <- ggplot(subset(color_properties_rt_sameDiff,colorSet=="colorset1"), aes(colorName,rt, color=nameability))+
-  geom_bar(stat="identity",size=1.5,fill="white", position=position_dodge(.95))+
+  geom_bar(aes(fill=nameability,alpha=nameability),stat="identity",size=1.5, position=position_dodge(.95))+
   geom_errorbar(aes(ymin=rt-ci,ymax=rt+ci), width=0.3,size=1.2, position=position_dodge(.95))+
   coord_cartesian(ylim=c(500,700))+
   ggtitle("Color Set 1 (Experiment 2A)")+
@@ -574,12 +685,14 @@ p1 <- ggplot(subset(color_properties_rt_sameDiff,colorSet=="colorset1"), aes(col
              "(70, 100, 90) - grey green",
              "(200, 100, 70) - brown"))+
   scale_color_brewer(palette="Set1",name="Nameability")+
+  scale_fill_brewer(palette="Set1",name="Nameability")+
+  scale_alpha_manual(name="Nameability",values=c(0,0.5))+
   theme(legend.position=c(0.2,0.85)) + 
-  theme(axis.text.x  = element_text(angle=90, vjust=0.5))+
+  theme(axis.text.x  = element_text(angle=90, vjust=0.5),plot.title = element_text(hjust = 0.5))+
   facet_wrap(~isSame)
 #color set 2 plot
 p2 <- ggplot(subset(color_properties_rt_sameDiff,colorSet=="colorset2"), aes(colorName,rt, color=nameability))+
-  geom_bar(stat="identity",size=1.5,fill="white", position=position_dodge(.95))+
+  geom_bar(aes(fill=nameability,alpha=nameability),stat="identity",size=1.5, position=position_dodge(.95))+
   geom_errorbar(aes(ymin=rt-ci,ymax=rt+ci), width=0.3,size=1.2, position=position_dodge(.95))+
   coord_cartesian(ylim=c(500,700))+
   ggtitle("Color Set 2 (Experiment 2B)")+
@@ -611,8 +724,10 @@ p2 <- ggplot(subset(color_properties_rt_sameDiff,colorSet=="colorset2"), aes(col
              "(50, 80, 100) - blue",
              "(110, 100, 10) - brown"))+
   scale_color_brewer(palette="Set1",name="Nameability")+
+  scale_fill_brewer(palette="Set1",name="Nameability")+
+  scale_alpha_manual(name="Nameability",values=c(0,0.5))+
   theme(legend.position=c(0.2,0.85)) + 
-  theme(axis.text.x  = element_text(angle=90, vjust=0.5))+
+  theme(axis.text.x  = element_text(angle=90, vjust=0.5),plot.title = element_text(hjust = 0.5))+
   facet_wrap(~isSame)
 
 #final figure (Fig 5)
@@ -795,7 +910,7 @@ mTrialInteraction_3B <- glmer(isRight~conditionC*totalTrialNumC+ (1+totalTrialNu
 summary(mTrialInteraction_3B)
 confint(mTrialInteraction_3B,method="Wald")[4:7,]
 
-#test for an interaction between experiment 1A and 1B
+#test for an interaction between experiment 3A and 3B
 #center experiment so condition effect is interpretable
 d$experiment3AB_centered <- ifelse(d$experiment=="3A",-0.5,
                                    ifelse(d$experiment=="3B",0.5,NA))
@@ -826,13 +941,20 @@ summary(mLearn_3)
 confint(mLearn_3,method="Wald")[2:3,]
 
 #predict accuracy from shape feature characteristics
-m <- glmer(isRight~avg_simpson + avg_discr_rt_z+avg_complexity_z+(1+avg_simpson + avg_discr_rt_z+avg_complexity_z|subject)+(1|imageName),
+#model with  maximal random effects structure (does not converge due to singular fit)
+m <- glmer(isRight~avg_simpson + avg_discr_rt_z+avg_complexity_z+dimensiondiscriminabilityRT_100_z+(1+avg_simpson + avg_discr_rt_z+avg_complexity_z|subject)+(1|imageName),
+           data=filter(d, experiment %in% c("3A","3B")),
+           family=binomial,
+           control=glmerControl(optimizer="bobyqa"))
+#final model with simplified random effects structure
+#simplify random effects by removing a less important random slope (avg_complexity_z) - qualitatively identical results to the maximal model
+m <- glmer(isRight~avg_simpson + avg_discr_rt_z+avg_complexity_z+dimensiondiscriminabilityRT_100_z+(1+avg_simpson +avg_discr_rt_z|subject)+(1|imageName),
            data=filter(d, experiment %in% c("3A","3B")),
            family=binomial,
            control=glmerControl(optimizer="bobyqa"))
 vif.mer(m) #check for multicollinearity
 summary(m)
-confint(m,method="Wald")[12:15,]
+confint(m,method="Wald")
 
 #### Experiments 3A-3B - Graph####
 subjOverall_byBlock_exp3A <- summarySEwithin(subset(subj_blocks,experiment=="3A"),"accuracy",betweenvars=c("condition"),withinvars=c("blockNum"),idvar="subject")
@@ -840,12 +962,14 @@ subjOverall_byBlock_exp3B <-  summarySEwithin(subset(subj_blocks,experiment=="3B
 
 #plot by block
 p3A <-  ggplot(subjOverall_byBlock_exp3A, aes(blockNum,accuracy,color=condition,group=condition))+
-  geom_line(size=2,position=position_dodge(.05))+
+  geom_line(aes(linetype=condition),size=2,position=position_dodge(.05))+
   geom_errorbar(aes(ymin=accuracy-se,ymax=accuracy+se),width=0,size=0.75,position=position_dodge(.05))+
-  geom_point(aes(fill=condition),size=4,position=position_dodge(.05))+
+  geom_point(aes(fill=condition, shape=condition),size=4,position=position_dodge(.05))+
   theme_classic(base_size=24)+
   scale_color_brewer(palette="Set1",name="Nameability")+
   scale_fill_brewer(palette="Set1",name="Nameability")+
+  scale_linetype_discrete(name="Nameability")+
+  scale_shape_discrete(name="Nameability")+
   xlab("Block\nExperiment 3A")+
   ylab("Training Accuracy")+
   ylim(c(0.48,1))+
@@ -854,12 +978,14 @@ p3A <-  ggplot(subjOverall_byBlock_exp3A, aes(blockNum,accuracy,color=condition,
 
 #3B
 p3B <- ggplot(subjOverall_byBlock_exp3B, aes(blockNum,accuracy,color=condition,group=condition))+
-  geom_line(size=2,position=position_dodge(.05))+
+  geom_line(aes(linetype=condition),size=2,position=position_dodge(.05))+
   geom_errorbar(aes(ymin=accuracy-se,ymax=accuracy+se),width=0,size=0.75,position=position_dodge(.05))+
-  geom_point(aes(fill=condition),size=4,position=position_dodge(.05))+
+  geom_point(aes(fill=condition, shape=condition),size=4,position=position_dodge(.05))+
   theme_classic(base_size=24)+
   scale_color_brewer(palette="Set1",name="Nameability")+
   scale_fill_brewer(palette="Set1",name="Nameability")+
+  scale_linetype_discrete(name="Nameability")+
+  scale_shape_discrete(name="Nameability")+
   xlab("Block\nExperiment 3B")+
   ylab("Training Accuracy")+
   ylim(c(0.48,1))+
@@ -867,7 +993,7 @@ p3B <- ggplot(subjOverall_byBlock_exp3B, aes(blockNum,accuracy,color=condition,g
   theme(legend.position=c(.7, .2), legend.text=element_text(size=16),legend.title=element_text(size=16,face="bold"))
 
 #plot together
-p_exp3 <- plot_grid(p3A,p3B,ncol=2,labels=c("A","B"))
+p_exp3 <- plot_grid(p3A,p3B,ncol=2,labels=c("A","B"), label_size=24)
 p_exp3
 
 ####Experiments 3A, 3B - Shape Properties####
@@ -891,7 +1017,7 @@ t.test(shape_properties$modal_response_agreement[shape_properties$nameability=="
        shape_properties$modal_response_agreement[shape_properties$nameability=="low"],var.equal=T)
 #correlation between association value and Simpson's diversity index
 cor.test(shape_properties$simpson_diversity,shape_properties$association_value)
-#correlation between association value and Simpson's diversity index
+#correlation between association value and modal name agreement
 cor.test(shape_properties$modal_response_agreement,shape_properties$association_value)
 
 #Exp 3A shapes
@@ -902,8 +1028,8 @@ shape_properties_exp3A<- shape_properties %>%
     simpson_diversity_mean=mean(simpson_diversity),
     modal_agreement_mean=mean(modal_response_agreement),
     description_length_mean=mean(description_length),
-    description_length_ci_high=t.test(description_length)$conf.int[2],
-    description_length_ci_low=t.test(description_length)$conf.int[1]
+    description_length_ci_low=t.test(description_length)$conf.int[1],
+    description_length_ci_high=t.test(description_length)$conf.int[2]
   )
 #compare shape description length by nameability
 t.test(filter(shape_properties,exp3A=="yes"&nameability=="high")$description_length,filter(shape_properties,exp3A=="yes"&nameability=="low")$description_length,var.equal=T)
@@ -916,8 +1042,8 @@ shape_properties_exp3B<- shape_properties %>%
     simpson_diversity_mean=mean(simpson_diversity),
     modal_agreement_mean=mean(modal_response_agreement),
     description_length_mean=mean(description_length),
-    description_length_ci_high=t.test(description_length)$conf.int[2],
-    description_length_ci_low=t.test(description_length)$conf.int[1]
+    description_length_ci_low=t.test(description_length)$conf.int[1],
+    description_length_ci_high=t.test(description_length)$conf.int[2]
   )
 #compare shape description length by nameability
 t.test(filter(shape_properties,exp3B=="yes"&nameability=="high")$description_length,
@@ -1036,12 +1162,14 @@ confint(mLearn_4,method="Wald")[2:3,]
 subjOverall_byBlock_exp4 <- summarySEwithin(filter(subj_blocks, experiment=="4"),"accuracy",betweenvars=c("condition"),withinvars=c("blockNum"),idvar="subject")
 
 p4 <- ggplot(subjOverall_byBlock_exp4, aes(blockNum,accuracy,color=condition,group=condition))+
-  geom_line(size=2,position=position_dodge(.05))+
+  geom_line(aes(linetype=condition),size=2,position=position_dodge(.05))+
   geom_errorbar(aes(ymin=accuracy-se,ymax=accuracy+se),width=0,size=0.75,position=position_dodge(.05))+
-  geom_point(aes(fill=condition),size=4,position=position_dodge(.05))+
+  geom_point(aes(fill=condition, shape=condition),size=4,position=position_dodge(.05))+
   theme_classic(base_size=24)+
   scale_color_brewer(palette="Set1",name="Nameability")+
   scale_fill_brewer(palette="Set1",name="Nameability")+
+  scale_linetype_discrete(name="Nameability")+
+  scale_shape_discrete(name="Nameability")+
   xlab("Block")+
   ylab("Training Accuracy")+
   ylim(c(0.48,1))+
@@ -1110,6 +1238,7 @@ Anova(m,type="III")
 #Strategy use and categorization accuracy
 m <- glmer(isRight~conditionC+singleFeature+multipleFeature+holisticStrategy+ (1|subject),data=subset(verbal_strategy_d,(experiment=="1A"|experiment=="1B")),family=binomial)
 summary(m)
+vif.mer(m)
 
 ####S2: Experiments 1A-1B - Graphing
 p1 <- ggplot(verbalSum1,aes(codingType,avg,group=condition,color=condition,fill=condition))+
@@ -1163,15 +1292,16 @@ strategySummarized_1 <- bind_rows(sumSubjStrategySingleFeature_1,sumSubjStrategy
 
 strategySummarized_1$strategyF <- factor(strategySummarized_1$strategy,levels=c("single feature","multiple feature","holistic","none"))
 p1_Acc <- ggplot(strategySummarized_1,aes(condition,acc,group=as.factor(strategyCode),fill=as.factor(strategyCode)))+
-  geom_bar(stat="identity",position=position_dodge(.9))+
+  geom_bar(aes(alpha=as.factor(strategyCode)),stat="identity",position=position_dodge(.9))+
   geom_errorbar(aes(ymin=se.lower,ymax=se.upper),color="black",position=position_dodge(.9),width=0.1)+
   facet_wrap(~strategyF)+
   scale_fill_brewer(palette="Accent",name="Strategy Used?",direction=-1,breaks=c(1,0),labels=c("yes","no"))+
+  scale_alpha_manual(name="Strategy Used?",breaks=c(1,0),values=c(0.5,1),labels=c("yes","no"))+
   theme_classic(base_size=18)+
   ylab("Accuracy")
 
 #plot all together
-strat1 <- plot_grid(p1,p1_Acc,labels=c("A","B"))
+strat1 <- plot_grid(p1,p1_Acc,labels=c("A","B"),label_size=24)
 strat1
 
 ####S2: Experiments 3A-3B
@@ -1251,17 +1381,18 @@ strategySummarized_3 <- bind_rows(sumSubjStrategySingleFeature_3,sumSubjStrategy
 
 strategySummarized_3$strategyF <- factor(strategySummarized_3$strategy,levels=c("single feature","multiple feature","holistic","none"))
 p3_Acc <- ggplot(strategySummarized_3,aes(condition,acc,group=as.factor(strategyCode),fill=as.factor(strategyCode)))+
-  geom_bar(stat="identity",position=position_dodge(.9))+
+  geom_bar(aes(alpha=as.factor(strategyCode)),stat="identity",position=position_dodge(.9))+
   geom_errorbar(aes(ymin=se.lower,ymax=se.upper),color="black",position=position_dodge(.9),width=0.1)+
   facet_wrap(~strategyF)+
   scale_fill_brewer(palette="Accent",name="Strategy Used?",direction=-1,breaks=c(1,0),labels=c("yes","no"))+
   theme_classic(base_size=18)+
   ylab("Accuracy")+
+  scale_alpha_manual(name="Strategy Used?",breaks=c(1,0),values=c(0.5,1),labels=c("yes","no"))+
   coord_cartesian(ylim=c(0,1.1))+
   scale_y_continuous(breaks=c(0, 0.25, 0.5,0.75,1))
 
 #plot all together
-strat3 <- plot_grid(p3,p3_Acc,labels=c("A","B"))
+strat3 <- plot_grid(p3,p3_Acc,labels=c("A","B"),label_size=24)
 strat3
 
 ####Supplementary Materials: S3 - Verbal Interference####
@@ -1270,7 +1401,8 @@ strat3
 subj_s3 <- filter(d,experiment=="s3_verbal_interference") %>%
   group_by(subject,condition,Age,Gender,L1) %>%
   summarize(
-    accuracy=mean(isRight),
+    accuracy=mean(isRight[RT<=5000&RT>=200]),
+    accuracy_all=mean(isRight),
     rt=mean(RT[RT<=5000&RT>=200]),
     num_excludedTrials_rt=sum(RT>5000|RT<200),
     total_trials = sum(!is.na(RT)))
@@ -1278,7 +1410,8 @@ subj_s3 <- filter(d,experiment=="s3_verbal_interference") %>%
 subj_s3_overall <- filter(d,experiment=="s3_verbal_interference") %>%
   group_by(subject,Age,Gender,L1) %>%
   summarize(
-    accuracy=mean(isRight),
+    accuracy=mean(isRight[RT<=5000&RT>=200]),
+    accuracy_all=mean(isRight),
     rt=mean(RT[RT<=5000&RT>=200]),
     num_excludedTrials_rt=sum(RT>5000|RT<200),
     total_trials = sum(!is.na(RT)))
@@ -1286,7 +1419,7 @@ subj_s3_overall <- filter(d,experiment=="s3_verbal_interference") %>%
 #overall descriptives
 exps3_descriptives <- subj_s3_overall %>%
   group_by() %>%
-  summarize(N=sum(!is.na(unique(subject))), gender_f=sum(Gender=="Female"), avg_age = round(mean(Age,na.rm=T),2), min_age=round(min(Age,na.rm=T),2),max_age=round(max(Age,na.rm=T),2), native_lang=sum(grepl("English",L1)))
+  summarize(N=sum(!is.na(unique(subject))), gender_f=sum(Gender=="Female"), avg_age = round(mean(Age,na.rm=T),2), min_age=round(min(Age,na.rm=T),2),max_age=round(max(Age,na.rm=T),2), native_lang=sum(grepl("English",L1)),proportion_rtExclusions=sum(num_excludedTrials_rt)/sum(total_trials))
 exps3_descriptives
 
 #overall accuracy
@@ -1303,27 +1436,29 @@ d$interference <- ifelse(d$experiment=="s3_verbal_interference","verbal interfer
                          ifelse(d$experiment=="2A","no verbal interference - Exp 2A",NA))
 d$interferenceC <- ifelse(d$interference=="verbal interference",0.5,
                           ifelse(d$interference=="no verbal interference - Exp 2A",-0.5,NA))
-mInterferenceInteraction_s3 <- glmer(isRight~conditionC*interferenceC+(1+conditionC|subject),data=filter(d, experiment %in% c("2A", "s3_verbal_interference")),family=binomial)
-summary(mInterferenceInteraction_s3)
-confint(mInterferenceInteraction_s3,method="Wald")[4:7,]
-#model fit controlling for item type and random item effects
-mInterferenceInteraction_item_s3 <- glmer(isRight~conditionC*interferenceC+ imageTypeC+(1+conditionC+imageTypeC|subject)+ (1|imageName),data=filter(d, experiment %in% c("2A", "s3_verbal_interference")),family=binomial)
-summary(mInterferenceInteraction_item_s3)
-confint(mInterferenceInteraction_item_s3,method="Wald")
 
-#models fit while removing trials with very short (<200 ms) and very long (>5000ms) RTs
+#models fit - removing trials with very short (<200 ms) and very long (>5000ms) RTs
 mInterferenceInteraction_rtExclusions_s3 <- glmer(isRight~conditionC*interferenceC+(1+conditionC|subject),data=filter(d, experiment %in% c("2A", "s3_verbal_interference")&(RT>=200&RT<=5000)),family=binomial)
-summary(mInterferenceInteraction_s3)
-confint(mInterferenceInteraction_s3,method="Wald")[4:7,]
+summary(mInterferenceInteraction_rtExclusions_s3)
+confint(mInterferenceInteraction_rtExclusions_s3,method="Wald")[4:7,]
 
-#model fit controlling for item type and random item effects
+#model fit controlling for item type and random item effects  removing trials with very short (<200 ms) and very long (>5000ms) RTs
 mInterferenceInteraction_rtExclusions_item_s3 <- glmer(isRight~conditionC*interferenceC+ imageTypeC+(1+conditionC+imageTypeC|subject)+ (1|imageName),data=filter(d, experiment %in% c("2A", "s3_verbal_interference")&(RT>=200&RT<=5000)),family=binomial)
 summary(mInterferenceInteraction_rtExclusions_item_s3)
 confint(mInterferenceInteraction_rtExclusions_item_s3,method="Wald")
 
+#main interaction model - all trials
+mInterferenceInteraction_s3 <- glmer(isRight~conditionC*interferenceC+(1+conditionC|subject),data=filter(d, experiment %in% c("2A", "s3_verbal_interference")),family=binomial)
+summary(mInterferenceInteraction_s3)
+confint(mInterferenceInteraction_s3,method="Wald")[4:7,]
+#model fit controlling for item type and random item effects - all trials
+mInterferenceInteraction_item_s3 <- glmer(isRight~conditionC*interferenceC+ imageTypeC+(1+conditionC+imageTypeC|subject)+ (1|imageName),data=filter(d, experiment %in% c("2A", "s3_verbal_interference")),family=binomial)
+summary(mInterferenceInteraction_item_s3)
+confint(mInterferenceInteraction_item_s3,method="Wald")
+
 ####Supplementary Materials: S3 - Graph ####
 subj_blocks_s3_2A <- d %>% 
-  filter(!is.na(interference)) %>%
+  filter(!is.na(interference)&(RT>=200&RT<=5000)) %>%
   group_by(experiment,interference,subject,condition,blockNum) %>%
   summarize(accuracy=mean(isRight))
 
@@ -1331,12 +1466,14 @@ subjOverall_byBlock_s3_2A <- summarySEwithin(subj_blocks_s3_2A,"accuracy",betwee
 
 #plot by block
 ps3 <- ggplot(subjOverall_byBlock_s3_2A, aes(blockNum,accuracy,color=condition,group=condition))+
-  geom_line(size=2,position=position_dodge(.05))+
-  geom_errorbar(aes(ymin=accuracy-se,ymax=accuracy+se),width=0,size=0.75,position=position_dodge(.05),linetype="solid")+
-  geom_point(aes(fill=condition),size=4,position=position_dodge(.05))+
+  geom_line(aes(linetype=condition),size=2,position=position_dodge(.05))+
+  geom_errorbar(aes(ymin=accuracy-se,ymax=accuracy+se),width=0,size=0.75,position=position_dodge(.05))+
+  geom_point(aes(fill=condition, shape=condition),size=4,position=position_dodge(.05))+
   theme_classic(base_size=24)+
   scale_color_brewer(palette="Set1",name="Nameability")+
   scale_fill_brewer(palette="Set1",name="Nameability")+
+  scale_linetype_discrete(name="Nameability")+
+  scale_shape_discrete(name="Nameability")+
   xlab("Block")+
   ylab("Training Accuracy")+
   scale_y_continuous(breaks=seq(0.4,1,0.1), limits=c(0.38,1))+
@@ -1393,6 +1530,7 @@ confint(mLearn_s4,method="Wald")[2:3,]
 
 #overall model fit w/ random intercept for stimulus
 mLearn_s4_item <- glmer(isRight~conditionC+ (1|subject)+(1|imageName),data=subset(d,experiment=="s4_shape+color"),family=binomial)
+#non-convergence due to singular fit - thus unclear model with by-item random effect is interpretable (but model yields virtually identical coefficients regardless)
 summary(mLearn_s4_item)
 confint(mLearn_s4_item,method="Wald")[3:4,]
 
@@ -1428,6 +1566,7 @@ summary(m)
 confint(m,method="Wald")[2:3,]
 
 m <- glmer(isRight~conditionC+ (1|subject),data=subset(d,experiment %in% c("s4_shape+color")&(subject %in% non_learners)),family=binomial)
+#non-convergence due to singular fit - thus unclear model is interpretable 
 summary(m)
 confint(m,method="Wald")[2:3,]
 
@@ -1482,12 +1621,14 @@ summary(m)
 subjOverall_byBlock_exps4 <- summarySEwithin(subset(subj_blocks,experiment=="s4_shape+color"),"accuracy",betweenvars=c("condition"),withinvars=c("blockNum"),idvar="subject")
 
 ps4 <- ggplot(subjOverall_byBlock_exps4, aes(blockNum,accuracy,color=condition,group=condition))+
-  geom_line(size=2,position=position_dodge(.05))+
+  geom_line(aes(linetype=condition),size=2,position=position_dodge(.05))+
   geom_errorbar(aes(ymin=accuracy-se,ymax=accuracy+se),width=0,size=0.75,position=position_dodge(.05))+
-  geom_point(aes(fill=condition),size=4,position=position_dodge(.05))+
+  geom_point(aes(fill=condition, shape=condition),size=4,position=position_dodge(.05))+
   theme_classic(base_size=24)+
   scale_color_brewer(palette="Set1",name="Nameability")+
   scale_fill_brewer(palette="Set1",name="Nameability")+
+  scale_linetype_discrete(name="Nameability")+
+  scale_shape_discrete(name="Nameability")+
   xlab("Block")+
   ylab("Training Accuracy")+
   scale_y_continuous(breaks=seq(0.5,1,0.1),limits=c(0.45,1))+
@@ -1540,17 +1681,18 @@ strategySummarized_s4 <- bind_rows(sumSubjStrategySingleFeature_s4,sumSubjStrate
 
 strategySummarized_s4$strategyF <- factor(strategySummarized_s4$strategy,levels=c("single feature","multiple feature","holistic","none"))
 ps4_Acc <- ggplot(strategySummarized_s4,aes(condition,acc,group=as.factor(strategyCode),fill=as.factor(strategyCode)))+
-  geom_bar(stat="identity",position=position_dodge(.9))+
+  geom_bar(aes(alpha=as.factor(strategyCode)),stat="identity",position=position_dodge(.9))+
   geom_errorbar(aes(ymin=se.lower,ymax=se.upper),color="black",position=position_dodge(.9),width=0.1)+
   facet_wrap(~strategyF)+
   scale_fill_brewer(palette="Accent",name="Strategy Used?",direction=-1,breaks=c(1,0),labels=c("yes","no"))+
   theme_classic(base_size=18)+
   ylab("Accuracy")+
   coord_cartesian(ylim=c(0,1.1))+
+  scale_alpha_manual(name="Strategy Used?",breaks=c(1,0),values=c(0.5,1),labels=c("yes","no"))+
   scale_y_continuous(breaks=c(0, 0.25, 0.5,0.75,1))
 
 #plot all together
-strat_s4 <- plot_grid(ps4_verbal,ps4_Acc,labels=c("A","B"))
+strat_s4 <- plot_grid(ps4_verbal,ps4_Acc,labels=c("A","B"),label_size=24)
 strat_s4
 
 #plot dimensions used
@@ -1564,7 +1706,6 @@ ps4_dim=ggplot(subset(verbalSums4,codingType %in% c("singleDimType","combinedDim
   scale_fill_brewer(palette="Set1",name="Nameability")+
   theme_classic(base_size=18)+
   theme(legend.position=c(.8, .8),legend.text=element_text(size=16),legend.title=element_text(size=16,face="bold"))
-ps4_dim
 
 
 sumSubjStrategySingleDim_s4 <- filter(subj_accuracy,experiment=="s4_shape+color") %>%
@@ -1592,15 +1733,15 @@ strategySummarized_s4 <- bind_rows(sumSubjStrategySingleDim_s4,sumSubjStrategyCo
 #experiment S4
 strategySummarized_s4$strategyF=factor(strategySummarized_s4$strategy,levels=c("single dim.","combining dim.","none"))
 ps4_DimAcc=ggplot(strategySummarized_s4,aes(condition,acc,group=as.factor(strategyCode),fill=as.factor(strategyCode)))+
-  geom_bar(stat="identity",position=position_dodge(.9))+
+  geom_bar(aes(alpha=as.factor(strategyCode)),stat="identity",position=position_dodge(.9))+
   geom_errorbar(aes(ymin=se.lower,ymax=se.upper),color="black",position=position_dodge(.9),width=0.1)+
   facet_wrap(~strategyF,ncol=2)+
   scale_fill_brewer(palette="Accent",name="Strategy Used?",direction=-1,breaks=c(1,0),labels=c("yes","no"))+
   theme_classic(base_size=18)+
   ylab("Accuracy")+
   coord_cartesian(ylim=c(0,1.1))+
+  scale_alpha_manual(name="Strategy Used?",breaks=c(1,0),values=c(0.5,1),labels=c("yes","no"))+
   scale_y_continuous(breaks=c(0, 0.25, 0.5,0.75,1))
-ps4_DimAcc
 
-strat_s4_dim=plot_grid(ps4_dim,ps4_DimAcc,labels=c("A","B"))
+strat_s4_dim=plot_grid(ps4_dim,ps4_DimAcc,labels=c("A","B"), label_size=24)
 strat_s4_dim

@@ -75,3 +75,6 @@ avg_complexity: average description length across shape1, shape2, and shape3
 avg_complexity_z: average description length across shape1, shape2, and shape3 (z-scored)
 max_complexity: maximum description length across shape1, shape2, and shape3
 max_complexity_z: maximum description length across shape1, shape2, and shape3 (z-scored)
+dimensiondiscriminabilityRT_100: average reaction time (in ms) for discriminating the 2 100% predictive colors/shapes of a given condition from behavioral norming study
+dimensiondiscriminabilityRT_100_z: average reaction time (in ms) for discriminating the 2 100% predictive colors/shapes of a given condition from behavioral norming study (z-scored)
+dimensiondE2000_100: delta E 2000 value for the 2 100% predictive colors of a given condition

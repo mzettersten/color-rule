@@ -1,5 +1,7 @@
 # color-rule
-Data &amp; Materials from study on the effect of nameability on category learning "Finding categories through words: More nameable features improve category learning" (Zettersten, &amp; Lupyan)
+Data &amp; Materials from study on the effect of nameability on category learning.
+
+Zettersten, M., & Lupyan, G. (2020). Finding categories through words: More nameable features improve category learning. Cognition, 104135. doi: 10.1016/j.cognition.2019.104135
 
 ## Abstract
 

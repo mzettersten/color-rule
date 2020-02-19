@@ -53,7 +53,7 @@ The folder data contains the following documents:
 
 - **CRN_verbal_strategies_codebook.txt**: Codebook for self-reported verbal strategy data (CRN_verbal_strategies.csv)
 
-- **property_data_codebook.txt**: A codebook for files containing summary information about feature properties
+- **property_data_codebook.txt**: A codebook for files containing summary information about feature properties:
   - color_discriminability_rt_data.csv
   - color_properties.csv
   - color_properties_discriminability.csv
